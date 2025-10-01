@@ -1,9 +1,7 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../api.js";
 import { useAuth } from "../state/auth.jsx";
 import { Link } from "react-router-dom";
-
-const API = import.meta.env.VITE_API_URL || "http://localhost:4000/api";
 
 export default function Dashboard() {
   const { token, user, logout } = useAuth();
@@ -16,8 +14,7 @@ export default function Dashboard() {
   async function load() {
     setLoading(true);
     try {
-      const { data } = await axios.get(`${API}/slips`, {
-        headers: { Authorization: `Bearer ${token}` },
+      const { data } = await api.get("/slips", {
         params: q ? { q } : {},
       });
       setSlips(data);

@@ -1,9 +1,7 @@
 import React, { useState } from "react";
-import axios from "axios";
+import api from "../api.js";
 import { useAuth } from "../state/auth.jsx";
 import { useNavigate } from "react-router-dom";
-
-const API = import.meta.env.VITE_API_URL || "http://localhost:4000/api";
 
 export default function UploadSlip() {
   const { token } = useAuth();
@@ -69,9 +67,8 @@ export default function UploadSlip() {
       const fd = new FormData();
       Object.entries(form).forEach(([k, v]) => v && fd.append(k, v));
       fd.append("file", file);
-      const { data } = await axios.post(`${API}/slips`, fd, {
+      const { data } = await api.post("/slips", fd, {
         headers: {
-          Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",
         },
       });

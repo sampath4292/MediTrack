@@ -1,9 +1,7 @@
 import React, { useState } from "react";
-import axios from "axios";
+import api from "../api.js";
 import { useAuth } from "../state/auth.jsx";
 import { useNavigate } from "react-router-dom";
-
-const API = import.meta.env.VITE_API_URL || "http://localhost:4000/api";
 
 export default function AuthPage() {
   const { login } = useAuth();
@@ -18,14 +16,13 @@ export default function AuthPage() {
     setLoading(true);
     setError(null);
     try {
-      const url =
-        mode === "login" ? `${API}/auth/login` : `${API}/auth/register`;
+      const endpoint = mode === "login" ? "/auth/login" : "/auth/register";
       const payload = {
         email: form.email,
         password: form.password,
         ...(mode === "register" ? { name: form.name } : {}),
       };
-      const { data } = await axios.post(url, payload);
+      const { data } = await api.post(endpoint, payload);
       login(data);
       nav("/");
     } catch (err) {
