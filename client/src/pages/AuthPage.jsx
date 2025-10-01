@@ -24,7 +24,7 @@ export default function AuthPage() {
       };
       const { data } = await api.post(endpoint, payload);
       login(data);
-      nav("/");
+      nav("/dashboard");
     } catch (err) {
       const resp = err.response?.data;
       if (resp?.details?.length) {

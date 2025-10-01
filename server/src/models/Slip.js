@@ -18,6 +18,15 @@ const slipSchema = new mongoose.Schema(
     mimeType: { type: String },
     size: { type: Number },
     notes: { type: String },
+    aiAnalysis: {
+      summary: { type: String },
+      healthIssues: [{ type: String }],
+      causes: [{ type: String }],
+      precautions: [{ type: String }],
+      remedies: [{ type: String }],
+      recommendations: [{ type: String }],
+      analyzedAt: { type: Date },
+    },
   },
   { timestamps: true }
 );

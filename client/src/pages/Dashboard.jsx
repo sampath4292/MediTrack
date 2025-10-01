@@ -1,58 +1,135 @@
-import React, { useEffect, useState } from "react";
-import api from "../api.js";
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../state/auth.jsx";
-import { Link } from "react-router-dom";
 
 export default function Dashboard() {
-  const { token, user, logout } = useAuth();
-  const [slips, setSlips] = useState([]);
-  const [q, setQ] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [selectedSlip, setSelectedSlip] = useState(null);
-  const [filterTags, setFilterTags] = useState([]);
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showAddMemberModal, setShowAddMemberModal] = useState(false);
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [selectedMember, setSelectedMember] = useState(null);
+  const [newMember, setNewMember] = useState({
+    name: "",
+    age: "",
+    relationship: "Father",
+    medicalNotes: ""
+  });
+  const [newReport, setNewReport] = useState({
+    type: "Prescription",
+    date: "",
+    doctor: "",
+    notes: ""
+  });
 
-  async function load() {
-    setLoading(true);
-    try {
-      const { data } = await api.get("/slips", {
-        params: q ? { q } : {},
-      });
-      setSlips(data);
-    } finally {
-      setLoading(false);
+  // Start with only Self as default family member
+  const [familyMembers, setFamilyMembers] = useState([
+    {
+      id: 1,
+      name: user?.name || "You",
+      age: null,
+      relationship: "Self",
+      avatar: "�",
+      reports: [] // Each member has their own reports array
     }
-  }
+  ]);
 
-  useEffect(() => {
-    load();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  // User's own medical data (separate from family members)
+  const [recentUploads, setRecentUploads] = useState([]);
+  
+  const [doctorVisits] = useState([
+    {
+      id: 1,
+      date: "2025-09-20",
+      doctor: "Dr. Smith",
+      summary: "Annual checkup - All vitals normal"
+    },
+    {
+      id: 2,
+      date: "2025-08-15",
+      doctor: "Dr. Johnson",
+      summary: "Follow-up consultation"
+    }
+  ]);
 
-  // Calculate statistics
-  const totalPrescriptions = slips.length;
-  const thisMonth = slips.filter((s) => {
-    const slipDate = new Date(s.date);
-    const now = new Date();
-    return (
-      slipDate.getMonth() === now.getMonth() &&
-      slipDate.getFullYear() === now.getFullYear()
-    );
-  }).length;
-  const uniqueDoctors = new Set(slips.map((s) => s.doctor).filter(Boolean))
-    .size;
+  const handleAddMember = (e) => {
+    e.preventDefault();
+    const member = {
+      id: familyMembers.length + 1,
+      name: newMember.name,
+      age: parseInt(newMember.age) || null,
+      relationship: newMember.relationship,
+      avatar: getAvatarByRelationship(newMember.relationship),
+      reports: [] // Start with no reports
+    };
+    setFamilyMembers([...familyMembers, member]);
+    setShowAddMemberModal(false);
+    setNewMember({ name: "", age: "", relationship: "Father", medicalNotes: "" });
+  };
 
-  // Get unique tags
-  const allTags = [...new Set(slips.flatMap((s) => s.tags || []))];
+  const handleUploadReport = (e) => {
+    e.preventDefault();
+    if (!selectedMember) return;
+    
+    const report = {
+      id: Date.now(),
+      type: newReport.type,
+      date: newReport.date,
+      doctor: newReport.doctor,
+      notes: newReport.notes,
+      uploadedAt: new Date().toISOString()
+    };
+
+    // Add report to the selected member
+    setFamilyMembers(familyMembers.map(member => 
+      member.id === selectedMember.id 
+        ? { ...member, reports: [...member.reports, report] }
+        : member
+    ));
+
+    setShowUploadModal(false);
+    setSelectedMember(null);
+    setNewReport({ type: "Prescription", date: "", doctor: "", notes: "" });
+  };
+
+  const openUploadModal = (member) => {
+    setSelectedMember(member);
+    setShowUploadModal(true);
+  };
+
+  const getAvatarByRelationship = (relationship) => {
+    const avatars = {
+      "Self": "�",
+      "Spouse": "👩‍❤️‍�",
+      "Father": "👨‍🦳",
+      "Mother": "👩‍🦳",
+      "Son": "👦",
+      "Daughter": "👧",
+      "Brother": "👨",
+      "Sister": "👩",
+      "Grandfather": "👴",
+      "Grandmother": "👵",
+      "Other": "👥"
+    };
+    return avatars[relationship] || "👤";
+  };
+
+  const handleSignOut = () => {
+    logout();
+    navigate("/");
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-      {/* Header */}
-      <header className="bg-white/80 backdrop-blur-lg shadow-sm border-b border-white/20 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-3">
-              <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      {/* Enhanced Navigation Bar */}
+      <header className="bg-white/90 backdrop-blur-md text-gray-800 shadow-md sticky top-0 z-50 transition-all duration-300">
+        <div className="container mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            {/* Logo */}
+            <Link to="/" className="flex items-center space-x-3 group">
+              <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg p-2 transform group-hover:scale-110 transition-transform duration-200">
                 <svg
-                  className="w-6 h-6 text-white"
+                  className="w-8 h-8 text-white"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -65,733 +142,617 @@ export default function Dashboard() {
                   />
                 </svg>
               </div>
-              <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                 MediVault
-              </h1>
-            </div>
-            <div className="flex items-center space-x-4">
-              <span className="text-gray-600 text-sm">
-                Welcome, <span className="font-semibold">{user?.name}</span>
               </span>
-              <button
-                onClick={logout}
-                className="flex items-center space-x-2 text-gray-600 hover:text-gray-800 transition-colors"
+            </Link>
+
+            {/* Desktop Navigation */}
+            <nav className="hidden lg:flex items-center space-x-8">
+              <Link
+                to="/"
+                className="text-gray-700 hover:text-blue-600 transition-colors font-medium"
+                aria-label="Navigate to home"
               >
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                  />
-                </svg>
-                <span className="text-sm">Logout</span>
+                Home
+              </Link>
+              <Link
+                to="/dashboard"
+                className="text-blue-600 font-semibold"
+                aria-label="Dashboard"
+              >
+                Dashboard
+              </Link>
+              <a
+                href="#family"
+                className="text-gray-700 hover:text-blue-600 transition-colors font-medium"
+                aria-label="Family section"
+              >
+                Family
+              </a>
+              <a
+                href="#help"
+                className="text-gray-700 hover:text-blue-600 transition-colors font-medium"
+                aria-label="Help section"
+              >
+                Help
+              </a>
+              <Link
+                to="/about"
+                className="text-gray-700 hover:text-blue-600 transition-colors font-medium"
+                aria-label="About page"
+              >
+                About
+              </Link>
+              <button
+                onClick={handleSignOut}
+                className="bg-gradient-to-r from-red-500 to-red-600 text-white px-6 py-2.5 rounded-lg font-semibold shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200"
+                aria-label="Sign out"
+              >
+                Sign Out
               </button>
-            </div>
+            </nav>
+
+            {/* Mobile Menu Button */}
+            <button
+              className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label="Toggle mobile menu"
+            >
+              {mobileMenuOpen ? (
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              ) : (
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              )}
+            </button>
           </div>
+
+          {/* Mobile Menu */}
+          {mobileMenuOpen && (
+            <nav className="lg:hidden mt-4 pb-4 space-y-3">
+              <Link to="/" className="block px-4 py-2 rounded-lg hover:bg-blue-50 transition-colors">
+                Home
+              </Link>
+              <Link to="/dashboard" className="block px-4 py-2 rounded-lg bg-blue-50 text-blue-600 font-semibold">
+                Dashboard
+              </Link>
+              <a href="#family" className="block px-4 py-2 rounded-lg hover:bg-blue-50 transition-colors">
+                Family
+              </a>
+              <a href="#help" className="block px-4 py-2 rounded-lg hover:bg-blue-50 transition-colors">
+                Help
+              </a>
+              <Link to="/about" className="block px-4 py-2 rounded-lg hover:bg-blue-50 transition-colors">
+                About
+              </Link>
+              <button
+                onClick={handleSignOut}
+                className="block w-full text-left px-4 py-2 rounded-lg bg-red-50 text-red-600 font-semibold"
+              >
+                Sign Out
+              </button>
+            </nav>
+          )}
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto p-6 space-y-8">
+      {/* Main Content */}
+      <main className="container mx-auto px-6 py-12">
         {/* Welcome Section */}
-        <div className="text-center py-12">
-          <div className="mb-8">
-            <h2 className="text-5xl md:text-6xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent mb-4 animate-float">
-              Welcome back, {user?.name?.split(" ")[0] || "Friend"}! 👋
-            </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
-              Your digital medicine vault is ready to keep all your
-              prescriptions safe and organized.
-              {totalPrescriptions === 0
-                ? " Let's get started by adding your first prescription!"
-                : ` You have ${totalPrescriptions} prescription${
-                    totalPrescriptions !== 1 ? "s" : ""
-                  } stored securely.`}
-            </p>
-          </div>
-
-          {/* Quick Actions for Empty State */}
-          {totalPrescriptions === 0 && (
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Link
-                to="/upload"
-                className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-2xl hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 text-lg font-semibold"
-              >
-                <svg
-                  className="w-6 h-6 mr-3"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 4v16m8-8H4"
-                  />
-                </svg>
-                Add Your First Prescription
-              </Link>
-              <div className="text-sm text-gray-500 flex items-center">
-                <svg
-                  className="w-4 h-4 mr-2"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-                Upload images or PDFs of your prescriptions
-              </div>
-            </div>
-          )}
+        <div className="text-center mb-12">
+          <h1 className="text-5xl md:text-6xl font-bold mb-4">
+            <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
+              Welcome back, {user?.name?.split(' ')[0] || 'User'}! 👋
+            </span>
+          </h1>
+          <p className="text-xl md:text-2xl text-gray-600 max-w-3xl mx-auto">
+            Your health records and family care in one place
+          </p>
         </div>
 
-        {/* Statistics Cards - Only show if there are prescriptions */}
-        {totalPrescriptions > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-white/80 backdrop-blur-lg rounded-2xl p-6 shadow-lg border border-white/20 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-              <div className="flex items-center space-x-4">
-                <div className="p-3 bg-blue-100 rounded-xl">
-                  <svg
-                    className="w-8 h-8 text-blue-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                    />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="text-gray-600 text-sm font-medium">
-                    Total Prescriptions
-                  </h3>
-                  <p className="text-3xl font-bold text-gray-900">
-                    {totalPrescriptions}
-                  </p>
-                </div>
+        {/* Health Stats Cards */}
+        <div className="grid md:grid-cols-3 gap-6 mb-12">
+          <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+            <div className="flex items-center space-x-4">
+              <div className="bg-blue-100 p-3 rounded-xl">
+                <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
               </div>
-            </div>
-
-            <div className="bg-white/80 backdrop-blur-lg rounded-2xl p-6 shadow-lg border border-white/20 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-              <div className="flex items-center space-x-4">
-                <div className="p-3 bg-green-100 rounded-xl">
-                  <svg
-                    className="w-8 h-8 text-green-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                    />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="text-gray-600 text-sm font-medium">
-                    This Month
-                  </h3>
-                  <p className="text-3xl font-bold text-gray-900">
-                    {thisMonth}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white/80 backdrop-blur-lg rounded-2xl p-6 shadow-lg border border-white/20 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-              <div className="flex items-center space-x-4">
-                <div className="p-3 bg-purple-100 rounded-xl">
-                  <svg
-                    className="w-8 h-8 text-purple-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                    />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="text-gray-600 text-sm font-medium">
-                    Unique Doctors
-                  </h3>
-                  <p className="text-3xl font-bold text-gray-900">
-                    {uniqueDoctors}
-                  </p>
-                </div>
+              <div>
+                <p className="text-sm text-gray-600 font-medium">Security Status</p>
+                <p className="text-2xl font-bold text-gray-900">100% Secure</p>
               </div>
             </div>
           </div>
-        )}
 
-        {/* Search and Controls - Only show if there are prescriptions */}
-        {totalPrescriptions > 0 && (
-          <div className="bg-white/80 backdrop-blur-lg rounded-2xl p-6 shadow-lg border border-white/20">
-            <div className="flex flex-col md:flex-row gap-4 items-center">
-              <div className="relative flex-1">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <svg
-                    className="h-5 w-5 text-gray-400"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
+          <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+            <div className="flex items-center space-x-4">
+              <div className="bg-green-100 p-3 rounded-xl">
+                <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600 font-medium">Access</p>
+                <p className="text-2xl font-bold text-gray-900">24/7</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+            <div className="flex items-center space-x-4">
+              <div className="bg-purple-100 p-3 rounded-xl">
+                <svg className="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600 font-medium">Family Members</p>
+                <p className="text-2xl font-bold text-gray-900">{familyMembers.length}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Family Members Section */}
+        <section id="family" className="mb-12">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-3xl font-bold text-gray-800 mb-2">Family Members</h2>
+              <p className="text-gray-600">Manage health records for your entire family</p>
+            </div>
+            <button
+              onClick={() => setShowAddMemberModal(true)}
+              className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 flex items-center space-x-2"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+              <span>Add Member</span>
+            </button>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {familyMembers.map((member) => (
+              <div
+                key={member.id}
+                className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2 p-6 border border-gray-100"
+              >
+                <div className="flex items-start space-x-4 mb-4">
+                  <div className="text-5xl">{member.avatar}</div>
+                  <div className="flex-1">
+                    <h3 className="text-xl font-bold text-gray-800">{member.name}</h3>
+                    <div className="flex items-center space-x-2 text-sm text-gray-600 mt-1">
+                      {member.age && (
+                        <>
+                          <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs font-semibold">
+                            {member.age} years
+                          </span>
+                          <span className="text-gray-400">•</span>
+                        </>
+                      )}
+                      <span className="text-purple-600 font-medium">{member.relationship}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-gray-50 p-4 rounded-lg mb-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs text-gray-500 font-medium mb-1">Medical Reports</p>
+                      <p className="text-2xl font-bold text-gray-800">
+                        {member.reports.length}
+                      </p>
+                    </div>
+                    <div className="bg-blue-100 p-3 rounded-lg">
+                      <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                    </div>
+                  </div>
+                  {member.reports.length === 0 ? (
+                    <p className="text-xs text-gray-500 mt-2">No reports yet</p>
+                  ) : (
+                    <p className="text-xs text-gray-500 mt-2">
+                      Last updated: {new Date(member.reports[member.reports.length - 1].date).toLocaleDateString()}
+                    </p>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    onClick={() => openUploadModal(member.id)}
+                    className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-2.5 px-4 rounded-lg font-semibold hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center space-x-1 text-sm"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                    />
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                    <span>Upload</span>
+                  </button>
+                  <button
+                    className="bg-white border-2 border-gray-300 text-gray-700 py-2.5 px-4 rounded-lg font-semibold hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 flex items-center justify-center space-x-1 text-sm"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
+                    <span>View</span>
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Features Section */}
+        <section className="mb-12">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl font-bold text-gray-800 mb-3">Platform Features</h2>
+            <p className="text-gray-600 text-lg">Everything you need to manage your family's health</p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* Feature 1 */}
+            <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+              <div className="bg-blue-100 w-14 h-14 rounded-xl flex items-center justify-center mb-4">
+                <svg className="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-gray-800 mb-2">Secure Storage</h3>
+              <p className="text-gray-600 text-sm">Bank-level encryption keeps your medical records safe and private</p>
+            </div>
+
+            {/* Feature 2 */}
+            <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+              <div className="bg-green-100 w-14 h-14 rounded-xl flex items-center justify-center mb-4">
+                <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-gray-800 mb-2">24/7 Access</h3>
+              <p className="text-gray-600 text-sm">Access your health records anytime, anywhere from any device</p>
+            </div>
+
+            {/* Feature 3 */}
+            <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+              <div className="bg-purple-100 w-14 h-14 rounded-xl flex items-center justify-center mb-4">
+                <svg className="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-gray-800 mb-2">AI Insights</h3>
+              <p className="text-gray-600 text-sm">Get intelligent health insights and recommendations powered by AI</p>
+            </div>
+
+            {/* Feature 4 */}
+            <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+              <div className="bg-indigo-100 w-14 h-14 rounded-xl flex items-center justify-center mb-4">
+                <svg className="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+              </div>
+              <h3 className="text-xl font-bold text-gray-800 mb-2">Family Sharing</h3>
+              <p className="text-gray-600 text-sm">Manage health records for your entire family in one place</p>
+            </div>
+          </div>
+        </section>
+
+        {/* Recent Medical Data Section */}
+        <section className="mb-12">
+          <div className="mb-6">
+            <h2 className="text-3xl font-bold text-gray-800 mb-2">Your Medical Records</h2>
+            <p className="text-gray-600">Recent uploads and health information</p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {recentUploads.map((upload) => (
+              <div
+                key={upload.id}
+                className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 p-6 border border-gray-100"
+              >
+                <div className="flex items-start space-x-4">
+                  <div className="bg-indigo-100 p-3 rounded-xl">
+                    <svg className="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-bold text-gray-800 mb-1">{upload.name}</h3>
+                    <p className="text-sm text-gray-500 mb-2">
+                      <span className="font-medium text-gray-700">{upload.type}</span> • {upload.doctor}
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      {new Date(upload.date).toLocaleDateString('en-US', { 
+                        year: 'numeric', 
+                        month: 'short', 
+                        day: 'numeric' 
+                      })}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            {/* Upload New Card */}
+            <Link
+              to="/upload"
+              className="bg-gradient-to-br from-indigo-50 to-blue-50 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 p-6 border-2 border-dashed border-indigo-300 flex flex-col items-center justify-center min-h-[140px] group"
+            >
+              <div className="bg-white p-3 rounded-full mb-3 group-hover:scale-110 transition-transform duration-200">
+                <svg className="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                </svg>
+              </div>
+              <p className="text-sm font-semibold text-gray-700">Upload New Document</p>
+            </Link>
+          </div>
+        </section>
+
+        {/* Doctor Visits Section */}
+        <section className="mb-12">
+          <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 text-white shadow-xl">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+              <div className="flex-1">
+                <h3 className="text-2xl font-bold mb-3">Track Doctor Visits</h3>
+                <p className="text-white/90 text-lg">
+                  Keep a comprehensive record of all doctor appointments, treatments, and follow-ups for you and your family.
+                </p>
+              </div>
+              <button className="bg-white text-blue-600 px-6 py-3 rounded-xl font-semibold hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 whitespace-nowrap">
+                Add Visit
+              </button>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      {/* Footer */}
+      <footer className="bg-gray-900 text-white py-12">
+        <div className="container mx-auto px-6">
+          <div className="grid md:grid-cols-4 gap-8 mb-8">
+            {/* Brand */}
+            <div>
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg p-2">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                   </svg>
                 </div>
+                <span className="text-xl font-bold">MediVault</span>
+              </div>
+              <p className="text-gray-400 text-sm">
+                Your trusted platform for secure medical record management.
+              </p>
+            </div>
+
+            {/* Quick Links */}
+            <div>
+              <h3 className="font-bold text-lg mb-4">Quick Links</h3>
+              <ul className="space-y-2 text-sm">
+                <li><Link to="/" className="text-gray-400 hover:text-blue-400 transition-colors">Home</Link></li>
+                <li><Link to="/dashboard" className="text-gray-400 hover:text-blue-400 transition-colors">Dashboard</Link></li>
+                <li><Link to="/about" className="text-gray-400 hover:text-blue-400 transition-colors">About</Link></li>
+              </ul>
+            </div>
+
+            {/* Help */}
+            <div id="help">
+              <h3 className="font-bold text-lg mb-4">Help & Support</h3>
+              <ul className="space-y-2 text-sm">
+                <li><a href="#" className="text-gray-400 hover:text-blue-400 transition-colors">Help Center</a></li>
+                <li><a href="#" className="text-gray-400 hover:text-blue-400 transition-colors">FAQs</a></li>
+                <li><a href="#" className="text-gray-400 hover:text-blue-400 transition-colors">Privacy Policy</a></li>
+                <li><a href="#" className="text-gray-400 hover:text-blue-400 transition-colors">Terms of Service</a></li>
+              </ul>
+            </div>
+
+            {/* Contact */}
+            <div>
+              <h3 className="font-bold text-lg mb-4">Contact</h3>
+              <p className="text-sm text-gray-400">
+                Email: support@medivault.com<br />
+                Phone: +1 (555) 123-4567<br />
+                Available 24/7
+              </p>
+            </div>
+          </div>
+
+          <div className="border-t border-gray-800 pt-8 text-center text-sm text-gray-400">
+            <p>© 2025 MediVault. All rights reserved.</p>
+          </div>
+        </div>
+      </footer>
+
+      {/* Add Family Member Modal */}
+      {showAddMemberModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 relative animate-fadeIn">
+            <button
+              onClick={() => setShowAddMemberModal(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">Add Family Member</h2>
+
+            <form onSubmit={handleAddMember} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Name *</label>
                 <input
-                  value={q}
-                  onChange={(e) => setQ(e.target.value)}
-                  placeholder="Search prescriptions, doctors, hospitals..."
-                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white/50 backdrop-blur-sm"
+                  type="text"
+                  required
+                  value={newMember.name}
+                  onChange={(e) => setNewMember({...newMember, name: e.target.value})}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  placeholder="Enter full name"
                 />
               </div>
-              <button
-                onClick={load}
-                disabled={loading}
-                className="px-6 py-3 bg-gray-800 text-white rounded-xl hover:bg-gray-900 transition-all duration-200 flex items-center space-x-2 disabled:opacity-50"
-              >
-                {loading ? (
-                  <>
-                    <svg
-                      className="animate-spin h-5 w-5"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                    >
-                      <circle
-                        className="opacity-25"
-                        cx="12"
-                        cy="12"
-                        r="10"
-                        stroke="currentColor"
-                        strokeWidth="4"
-                      ></circle>
-                      <path
-                        className="opacity-75"
-                        fill="currentColor"
-                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                      ></path>
-                    </svg>
-                    <span>Searching...</span>
-                  </>
-                ) : (
-                  <span>Search</span>
-                )}
-              </button>
-              <Link
-                to="/upload"
-                className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 flex items-center space-x-2"
-              >
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 4v16m8-8H4"
-                  />
-                </svg>
-                <span>Add Prescription</span>
-              </Link>
-            </div>
-
-            {/* Filter Tags */}
-            {allTags.length > 0 && (
-              <div className="mt-4">
-                <p className="text-sm text-gray-600 mb-2">Filter by tags:</p>
-                <div className="flex flex-wrap gap-2">
-                  {allTags.map((tag) => (
-                    <button
-                      key={tag}
-                      onClick={() =>
-                        setFilterTags((prev) =>
-                          prev.includes(tag)
-                            ? prev.filter((t) => t !== tag)
-                            : [...prev, tag]
-                        )
-                      }
-                      className={`px-3 py-1 text-xs rounded-full transition-all duration-200 ${
-                        filterTags.includes(tag)
-                          ? "bg-blue-600 text-white"
-                          : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                      }`}
-                    >
-                      {tag}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Prescriptions Grid */}
-        <div className="grid gap-6">
-          {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-            </div>
-          ) : slips.length === 0 ? (
-            <div className="text-center py-20">
-              {/* Beautiful Empty State Illustration */}
-              <div className="relative mb-8">
-                <div className="w-32 h-32 bg-gradient-to-br from-blue-100 to-purple-100 rounded-3xl flex items-center justify-center mx-auto mb-6 animate-float">
-                  <div className="relative">
-                    <svg
-                      className="w-16 h-16 text-blue-500"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={1.5}
-                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                      />
-                    </svg>
-                    {/* Floating medical icons */}
-                    <div className="absolute -top-2 -right-2 w-8 h-8 bg-green-400 rounded-full flex items-center justify-center animate-pulse">
-                      <svg
-                        className="w-4 h-4 text-white"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Decorative elements */}
-                <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-4">
-                  <div className="flex space-x-2">
-                    <div className="w-3 h-3 bg-blue-300 rounded-full animate-bounce"></div>
-                    <div className="w-3 h-3 bg-purple-300 rounded-full animate-bounce delay-100"></div>
-                    <div className="w-3 h-3 bg-indigo-300 rounded-full animate-bounce delay-200"></div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="max-w-md mx-auto">
-                <h3 className="text-2xl font-bold text-gray-900 mb-3">
-                  Your vault is empty
-                </h3>
-                <p className="text-gray-600 mb-8 leading-relaxed">
-                  Start building your digital medicine collection. Upload
-                  prescriptions, organize by doctors, and never lose track of
-                  your medications again.
-                </p>
-
-                {/* Feature highlights */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-                  <div className="text-center p-4">
-                    <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-2">
-                      <svg
-                        className="w-6 h-6 text-blue-600"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-                        />
-                      </svg>
-                    </div>
-                    <p className="text-sm text-gray-600">Upload easily</p>
-                  </div>
-                  <div className="text-center p-4">
-                    <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mx-auto mb-2">
-                      <svg
-                        className="w-6 h-6 text-green-600"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                        />
-                      </svg>
-                    </div>
-                    <p className="text-sm text-gray-600">Search instantly</p>
-                  </div>
-                  <div className="text-center p-4">
-                    <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mx-auto mb-2">
-                      <svg
-                        className="w-6 h-6 text-purple-600"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
-                        />
-                      </svg>
-                    </div>
-                    <p className="text-sm text-gray-600">Stay organized</p>
-                  </div>
-                </div>
-
-                <Link
-                  to="/upload"
-                  className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-2xl hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 text-lg font-semibold"
-                >
-                  <svg
-                    className="w-6 h-6 mr-3"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 4v16m8-8H4"
-                    />
-                  </svg>
-                  Upload First Prescription
-                </Link>
-              </div>
-            </div>
-          ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {slips
-                .filter(
-                  (s) =>
-                    filterTags.length === 0 ||
-                    filterTags.some((tag) => s.tags?.includes(tag))
-                )
-                .map((slip) => (
-                  <div
-                    key={slip._id}
-                    className="bg-white/80 backdrop-blur-lg rounded-2xl p-6 shadow-lg border border-white/20 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer"
-                    onClick={() => setSelectedSlip(slip)}
-                  >
-                    <div className="flex justify-between items-start mb-4">
-                      <h3 className="text-lg font-semibold text-gray-900 truncate">
-                        {slip.title}
-                      </h3>
-                      <button className="text-gray-400 hover:text-gray-600 transition-colors">
-                        <svg
-                          className="w-5 h-5"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                          />
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                          />
-                        </svg>
-                      </button>
-                    </div>
-
-                    {slip.doctor && (
-                      <div className="flex items-center space-x-2 mb-2">
-                        <svg
-                          className="w-4 h-4 text-gray-400"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                          />
-                        </svg>
-                        <span className="text-sm text-gray-600">
-                          {slip.doctor}
-                        </span>
-                      </div>
-                    )}
-
-                    {slip.hospital && (
-                      <div className="flex items-center space-x-2 mb-2">
-                        <svg
-                          className="w-4 h-4 text-gray-400"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                          />
-                        </svg>
-                        <span className="text-sm text-gray-600">
-                          {slip.hospital}
-                        </span>
-                      </div>
-                    )}
-
-                    <div className="flex items-center space-x-2 mb-4">
-                      <svg
-                        className="w-4 h-4 text-gray-400"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                        />
-                      </svg>
-                      <span className="text-sm text-gray-600">
-                        {new Date(slip.date).toLocaleDateString()}
-                      </span>
-                    </div>
-
-                    {slip.tags && slip.tags.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mb-4">
-                        {slip.tags.map((tag) => (
-                          <span
-                            key={tag}
-                            className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full"
-                          >
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-
-                    {slip.notes && (
-                      <p className="text-sm text-gray-600 line-clamp-2 mb-4">
-                        {slip.notes}
-                      </p>
-                    )}
-
-                    <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                      <span className="text-xs text-gray-500">
-                        {slip.mimeType || "PDF"}
-                      </span>
-                      <div className="flex items-center space-x-2 text-blue-600">
-                        <svg
-                          className="w-4 h-4"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                          />
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                          />
-                        </svg>
-                        <span className="text-sm font-medium">View</span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Modal for viewing slip details */}
-      {selectedSlip && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-gray-200">
-              <div className="flex justify-between items-start">
-                <h2 className="text-2xl font-bold text-gray-900">
-                  {selectedSlip.title}
-                </h2>
-                <button
-                  onClick={() => setSelectedSlip(null)}
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
-                >
-                  <svg
-                    className="w-6 h-6"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
-                </button>
-              </div>
-              {selectedSlip.tags && selectedSlip.tags.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {selectedSlip.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <div className="p-6 space-y-6">
-              <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <h3 className="text-sm font-medium text-gray-900 mb-2">
-                    Doctor
-                  </h3>
-                  <p className="text-gray-600">
-                    {selectedSlip.doctor || "Not specified"}
-                  </p>
-                </div>
-                <div>
-                  <h3 className="text-sm font-medium text-gray-900 mb-2">
-                    Hospital/Clinic
-                  </h3>
-                  <p className="text-gray-600">
-                    {selectedSlip.hospital || "Not specified"}
-                  </p>
-                </div>
-                <div>
-                  <h3 className="text-sm font-medium text-gray-900 mb-2">
-                    Prescription Date
-                  </h3>
-                  <p className="text-gray-600">
-                    {new Date(selectedSlip.date).toLocaleDateString()}
-                  </p>
-                </div>
-                <div>
-                  <h3 className="text-sm font-medium text-gray-900 mb-2">
-                    Added to Vault
-                  </h3>
-                  <p className="text-gray-600">
-                    {new Date(selectedSlip.createdAt).toLocaleDateString()}
-                  </p>
-                </div>
-              </div>
-
-              {selectedSlip.notes && (
-                <div>
-                  <h3 className="text-sm font-medium text-gray-900 mb-2">
-                    Notes
-                  </h3>
-                  <p className="text-gray-600">{selectedSlip.notes}</p>
-                </div>
-              )}
 
               <div>
-                <h3 className="text-sm font-medium text-gray-900 mb-4">
-                  File Preview
-                </h3>
-                {selectedSlip.mimeType?.includes("pdf") ? (
-                  <div className="text-center py-12 bg-gray-50 rounded-xl">
-                    <svg
-                      className="w-16 h-16 text-gray-400 mx-auto mb-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                      />
-                    </svg>
-                    <p className="text-gray-600 mb-4">
-                      PDF files cannot be previewed in browser
-                    </p>
-                    <a
-                      href={selectedSlip.fileUrl}
-                      download
-                      className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                    >
-                      <svg
-                        className="w-5 h-5 mr-2"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                        />
-                      </svg>
-                      Download PDF
-                    </a>
-                  </div>
-                ) : (
-                  <img
-                    src={selectedSlip.fileUrl}
-                    alt={selectedSlip.title}
-                    className="w-full rounded-xl shadow-lg"
-                  />
-                )}
+                <label className="block text-sm font-medium text-gray-700 mb-2">Age *</label>
+                <input
+                  type="number"
+                  required
+                  min="0"
+                  max="150"
+                  value={newMember.age}
+                  onChange={(e) => setNewMember({...newMember, age: e.target.value})}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  placeholder="Enter age"
+                />
               </div>
-            </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Relationship *</label>
+                <select
+                  required
+                  value={newMember.relationship}
+                  onChange={(e) => setNewMember({...newMember, relationship: e.target.value})}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                >
+                  <option value="Self">Self</option>
+                  <option value="Spouse">Spouse</option>
+                  <option value="Father">Father</option>
+                  <option value="Mother">Mother</option>
+                  <option value="Son">Son</option>
+                  <option value="Daughter">Daughter</option>
+                  <option value="Brother">Brother</option>
+                  <option value="Sister">Sister</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Medical Notes</label>
+                <textarea
+                  value={newMember.medicalNotes}
+                  onChange={(e) => setNewMember({...newMember, medicalNotes: e.target.value})}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
+                  rows="3"
+                  placeholder="Any health conditions, allergies, or notes..."
+                ></textarea>
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowAddMemberModal(false)}
+                  className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-semibold hover:shadow-lg transition-all"
+                >
+                  Add Member
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Upload Report Modal */}
+      {showUploadModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 relative animate-fadeIn">
+            <button
+              onClick={() => setShowUploadModal(false)}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">Upload Medical Report</h2>
+
+            <form onSubmit={handleUploadReport} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Report Type *</label>
+                <select
+                  required
+                  value={newReport.type}
+                  onChange={(e) => setNewReport({...newReport, type: e.target.value})}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                >
+                  <option value="">Select type</option>
+                  <option value="Blood Test">Blood Test</option>
+                  <option value="X-Ray">X-Ray</option>
+                  <option value="MRI Scan">MRI Scan</option>
+                  <option value="CT Scan">CT Scan</option>
+                  <option value="Prescription">Prescription</option>
+                  <option value="Diagnosis">Diagnosis</option>
+                  <option value="Vaccination">Vaccination</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Date *</label>
+                <input
+                  type="date"
+                  required
+                  value={newReport.date}
+                  onChange={(e) => setNewReport({...newReport, date: e.target.value})}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Doctor Name</label>
+                <input
+                  type="text"
+                  value={newReport.doctor}
+                  onChange={(e) => setNewReport({...newReport, doctor: e.target.value})}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  placeholder="Dr. John Doe"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Notes</label>
+                <textarea
+                  value={newReport.notes}
+                  onChange={(e) => setNewReport({...newReport, notes: e.target.value})}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
+                  rows="3"
+                  placeholder="Additional notes about this report..."
+                ></textarea>
+              </div>
+
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <p className="text-sm text-blue-800">
+                  <span className="font-semibold">Note:</span> Actual file upload functionality will be implemented with backend integration.
+                </p>
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => setShowUploadModal(false)}
+                  className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-semibold hover:shadow-lg transition-all"
+                >
+                  Upload Report
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

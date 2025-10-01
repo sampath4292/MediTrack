@@ -3,6 +3,10 @@ import multer from "multer";
 import { requireAuth } from "../middleware/auth.js";
 import Slip from "../models/Slip.js";
 import { v2 as cloudinary } from "cloudinary";
+import {
+  analyzePrescription,
+  generatePatientHealthReport,
+} from "../services/aiService.js";
 
 const router = Router();
 
@@ -58,6 +62,72 @@ router.delete("/:id", requireAuth, async (req, res) => {
   if (!slip) return res.status(404).json({ error: "Not found" });
   await slip.deleteOne();
   res.json({ success: true });
+});
+
+// AI Analysis endpoint for a single prescription
+router.post("/:id/analyze", requireAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const slip = await Slip.findOne({ _id: id, user: req.user.id });
+
+    if (!slip) {
+      return res.status(404).json({ error: "Prescription not found" });
+    }
+
+    // Check if AI analysis already exists (optional: can re-analyze)
+    if (slip.aiAnalysis && slip.aiAnalysis.analyzedAt) {
+      return res.json({ slip, cached: true });
+    }
+
+    // Perform AI analysis
+    const analysis = await analyzePrescription({
+      title: slip.title,
+      doctor: slip.doctor,
+      hospital: slip.hospital,
+      date: slip.date,
+      notes: slip.notes,
+      tags: slip.tags,
+    });
+
+    // Update slip with AI analysis
+    slip.aiAnalysis = analysis;
+    await slip.save();
+
+    res.json({ slip, cached: false });
+  } catch (error) {
+    console.error("Analysis error:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Generate comprehensive health report for the user
+router.get("/health-report", requireAuth, async (req, res) => {
+  try {
+    const slips = await Slip.find({ user: req.user.id }).sort({ date: -1 });
+
+    if (slips.length === 0) {
+      return res.status(404).json({
+        error: "No prescriptions found. Upload prescriptions first.",
+      });
+    }
+
+    // Get user info
+    const user = req.user;
+
+    // Generate comprehensive health report
+    const report = await generatePatientHealthReport(slips, user.name);
+
+    res.json({
+      report,
+      patient: {
+        name: user.name,
+        email: user.email,
+      },
+    });
+  } catch (error) {
+    console.error("Health report error:", error);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 export default router;
