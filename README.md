@@ -6,6 +6,8 @@
 
 </div>
 Live link - https://meditrack-1-qjyk.onrender.com/
+
+
 ## 📌 Overview
 
 MediVault is a **MERN stack web application** that lets users securely **store, manage, search, and track medical prescriptions ("medicine slips")**. Instead of carrying paper slips, patients can upload and access their prescription history anywhere.
@@ -237,4 +239,5 @@ Contributions are welcome! Please fork this repo and create a pull request.
 
 This project is licensed under the MIT License – feel free to use it for personal or academic purposes.
 ```
+
 
