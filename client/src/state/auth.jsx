@@ -7,6 +7,23 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(() =>
     JSON.parse(localStorage.getItem("user") || "null")
   );
+  const [loading, setLoading] = useState(true);
+
+  // Verify token validity on mount
+  useEffect(() => {
+    const verifyToken = async () => {
+      const storedToken = localStorage.getItem("token");
+      if (storedToken) {
+        // Optional: Verify token with backend
+        // For now, just trust localStorage
+        setLoading(false);
+      } else {
+        setLoading(false);
+      }
+    };
+    
+    verifyToken();
+  }, []);
 
   function login(data) {
     setToken(data.token);
@@ -14,6 +31,7 @@ export function AuthProvider({ children }) {
     localStorage.setItem("token", data.token);
     localStorage.setItem("user", JSON.stringify(data.user));
   }
+
   function logout() {
     setToken(null);
     setUser(null);
@@ -22,7 +40,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthCtx.Provider value={{ token, user, login, logout }}>
+    <AuthCtx.Provider value={{ token, user, login, logout, loading }}>
       {children}
     </AuthCtx.Provider>
   );

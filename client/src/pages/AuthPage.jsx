@@ -1,15 +1,22 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import api from "../api.js";
 import { useAuth } from "../state/auth.jsx";
 import { useNavigate } from "react-router-dom";
 
 export default function AuthPage() {
-  const { login } = useAuth();
+  const { login, token } = useAuth();
   const nav = useNavigate();
   const [mode, setMode] = useState("login");
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  // Redirect authenticated users away from auth page
+  useEffect(() => {
+    if (token) {
+      nav("/dashboard", { replace: true });
+    }
+  }, [token, nav]);
 
   async function submit(e) {
     e.preventDefault();
@@ -24,7 +31,7 @@ export default function AuthPage() {
       };
       const { data } = await api.post(endpoint, payload);
       login(data);
-      nav("/dashboard");
+      nav("/dashboard", { replace: true });
     } catch (err) {
       const resp = err.response?.data;
       if (resp?.details?.length) {

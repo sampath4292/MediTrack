@@ -684,8 +684,20 @@ export default function Dashboard() {
                 <Menu as="div" className="relative inline-block text-left">
                   <div>
                     <Menu.Button className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100 transition-colors">
-                      <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white font-bold">
-                        {user?.name?.charAt(0) || "U"}
+                      <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white">
+                        <svg
+                          className="w-6 h-6 text-white"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                          />
+                        </svg>
                       </div>
                       <div className="hidden md:block text-left">
                         <p className="text-sm font-semibold text-gray-800">
@@ -1113,65 +1125,70 @@ export default function Dashboard() {
               </div>
             </div>
           </section>
-          {/* Health Stats Cards */}
-          <div className="grid md:grid-cols-3 gap-6 mb-12">
-            <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100 hover:shadow-lg hover:scale-105 transition-all duration-300">
-              <div className="flex items-center space-x-4">
-                <div className="bg-blue-100 p-3 rounded-xl">
-                  <svg
-                    className="w-8 h-8 text-blue-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                    />
-                  </svg>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600 font-medium">
-                    Security Status
-                  </p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    100% Secure
-                  </p>
-                </div>
-              </div>
+          
+          {/* Your Medical Records Section - Moved below Doctor Visits */}
+          <section className="mb-12">
+            <div className="mb-6">
+              <h2 className="text-3xl font-bold text-gray-800 mb-2">
+                Your Medical Records
+              </h2>
+              <p className="text-gray-600">
+                Recent uploads and health information
+              </p>
             </div>
 
-            <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100 hover:shadow-lg hover:scale-105 transition-all duration-300">
-              <div className="flex items-center space-x-4">
-                <div className="bg-green-100 p-3 rounded-xl">
-                  <svg
-                    className="w-8 h-8 text-green-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {recentUploads.map((upload) => (
+                <div
+                  key={upload.id}
+                  className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 p-6 border border-gray-100"
+                >
+                  <div className="flex items-start space-x-4">
+                    <div className="bg-indigo-100 p-3 rounded-xl">
+                      <svg
+                        className="w-6 h-6 text-indigo-600"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                        />
+                      </svg>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-gray-800 mb-1">
+                        {upload.name}
+                      </h3>
+                      <p className="text-sm text-gray-500 mb-2">
+                        <span className="font-medium text-gray-700">
+                          {upload.type}
+                        </span>{" "}
+                        • {upload.doctor}
+                      </p>
+                      <p className="text-xs text-gray-400">
+                        {new Date(upload.date).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                        })}
+                      </p>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm text-gray-600 font-medium">Access</p>
-                  <p className="text-2xl font-bold text-gray-900">24/7</p>
-                </div>
-              </div>
-            </div>
+              ))}
 
-            <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100 hover:shadow-lg hover:scale-105 transition-all duration-300">
-              <div className="flex items-center space-x-4">
-                <div className="bg-purple-100 p-3 rounded-xl">
+              {/* Upload New Card */}
+              <Link
+                to="/upload"
+                className="bg-gradient-to-br from-indigo-50 to-blue-50 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 p-6 border-2 border-dashed border-indigo-300 flex flex-col items-center justify-center min-h-[140px] group"
+              >
+                <div className="bg-white p-3 rounded-full mb-3 group-hover:scale-110 transition-transform duration-200">
                   <svg
-                    className="w-8 h-8 text-purple-600"
+                    className="w-8 h-8 text-indigo-600"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -1180,21 +1197,16 @@ export default function Dashboard() {
                       strokeLinecap="round"
                       strokeLinejoin="round"
                       strokeWidth={2}
-                      d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                      d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
                     />
                   </svg>
                 </div>
-                <div>
-                  <p className="text-sm text-gray-600 font-medium">
-                    Family Members
-                  </p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {familyMembers.length}
-                  </p>
-                </div>
-              </div>
+                <p className="text-sm font-semibold text-gray-700">
+                  Upload New Document
+                </p>
+              </Link>
             </div>
-          </div>
+          </section>
           {/* AI Health Insights Section */}
           <section id="ai-insights" className="mb-12">
             <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
@@ -1552,7 +1564,7 @@ export default function Dashboard() {
             </div>
           </section>
           {/* Features Section */}
-          <section className="mb-12">
+          <section id="features" className="mb-12">
             <div className="text-center mb-10">
               <h2 className="text-3xl font-bold text-gray-800 mb-3">
                 Platform Features
@@ -1562,7 +1574,7 @@ export default function Dashboard() {
               </p>
             </div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
               {/* Feature 1 */}
               <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
                 <div className="bg-blue-100 w-14 h-14 rounded-xl flex items-center justify-center mb-4">
@@ -1665,104 +1677,87 @@ export default function Dashboard() {
                 </p>
               </div>
             </div>
-          </section>
-          {/* Recent Medical Data Section */}
-          <section className="mb-12">
-            <div className="mb-6">
-              <h2 className="text-3xl font-bold text-gray-800 mb-2">
-                Your Medical Records
-              </h2>
-              <p className="text-gray-600">
-                Recent uploads and health information
-              </p>
-            </div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {recentUploads.map((upload) => (
-                <div
-                  key={upload.id}
-                  className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 p-6 border border-gray-100"
-                >
-                  <div className="flex items-start space-x-4">
-                    <div className="bg-indigo-100 p-3 rounded-xl">
-                      <svg
-                        className="w-6 h-6 text-indigo-600"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                        />
-                      </svg>
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-bold text-gray-800 mb-1">
-                        {upload.name}
-                      </h3>
-                      <p className="text-sm text-gray-500 mb-2">
-                        <span className="font-medium text-gray-700">
-                          {upload.type}
-                        </span>{" "}
-                        • {upload.doctor}
-                      </p>
-                      <p className="text-xs text-gray-400">
-                        {new Date(upload.date).toLocaleDateString("en-US", {
-                          year: "numeric",
-                          month: "short",
-                          day: "numeric",
-                        })}
-                      </p>
-                    </div>
+            {/* Health Stats Cards - Moved to Features Section */}
+            <div className="grid md:grid-cols-3 gap-6">
+              <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100 hover:shadow-lg hover:scale-105 transition-all duration-300">
+                <div className="flex items-center space-x-4">
+                  <div className="bg-blue-100 p-3 rounded-xl">
+                    <svg
+                      className="w-8 h-8 text-blue-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                      />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600 font-medium">
+                      Security Status
+                    </p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      100% Secure
+                    </p>
                   </div>
                 </div>
-              ))}
+              </div>
 
-              {/* Upload New Card */}
-              <Link
-                to="/upload"
-                className="bg-gradient-to-br from-indigo-50 to-blue-50 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 p-6 border-2 border-dashed border-indigo-300 flex flex-col items-center justify-center min-h-[140px] group"
-              >
-                <div className="bg-white p-3 rounded-full mb-3 group-hover:scale-110 transition-transform duration-200">
-                  <svg
-                    className="w-8 h-8 text-indigo-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-                    />
-                  </svg>
+              <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100 hover:shadow-lg hover:scale-105 transition-all duration-300">
+                <div className="flex items-center space-x-4">
+                  <div className="bg-green-100 p-3 rounded-xl">
+                    <svg
+                      className="w-8 h-8 text-green-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600 font-medium">Access</p>
+                    <p className="text-2xl font-bold text-gray-900">24/7</p>
+                  </div>
                 </div>
-                <p className="text-sm font-semibold text-gray-700">
-                  Upload New Document
-                </p>
-              </Link>
-            </div>
-          </section>
-          {/* Doctor Visits Section */}
-          <section className="mb-12">
-            <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 text-white shadow-xl">
-              <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-                <div className="flex-1">
-                  <h3 className="text-2xl font-bold mb-3">
-                    Track Doctor Visits
-                  </h3>
-                  <p className="text-white/90 text-lg">
-                    Keep a comprehensive record of all doctor appointments,
-                    treatments, and follow-ups for you and your family.
-                  </p>
+              </div>
+
+              <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100 hover:shadow-lg hover:scale-105 transition-all duration-300">
+                <div className="flex items-center space-x-4">
+                  <div className="bg-purple-100 p-3 rounded-xl">
+                    <svg
+                      className="w-8 h-8 text-purple-600"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                      />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600 font-medium">
+                      Family Members
+                    </p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {familyMembers.length}
+                    </p>
+                  </div>
                 </div>
-                <button className="bg-white text-blue-600 px-6 py-3 rounded-xl font-semibold hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 whitespace-nowrap">
-                  Add Visit
-                </button>
               </div>
             </div>
           </section>
@@ -1975,8 +1970,20 @@ export default function Dashboard() {
             </button>
 
             <div className="flex items-center space-x-4 mb-6">
-              <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-2xl">
-                {user?.name?.charAt(0) || "U"}
+              <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white">
+                <svg
+                  className="w-10 h-10 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                  />
+                </svg>
               </div>
               <div>
                 <h2 className="text-2xl font-bold text-gray-800">
