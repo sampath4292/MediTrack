@@ -136,7 +136,7 @@ export default function About() {
           <div className="text-center mb-16">
             <h1 className="text-5xl md:text-6xl font-bold mb-6">
               <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-clip-text text-transparent">
-                About MediVault
+                About MediTrack
               </span>
             </h1>
             <p className="text-xl md:text-2xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
@@ -170,7 +170,7 @@ export default function About() {
               Our Mission
             </h2>
             <p className="text-lg text-gray-600 max-w-4xl mx-auto leading-relaxed">
-              At MediVault, we believe that everyone deserves easy, secure
+              At MediTrack, we believe that everyone deserves easy, secure
               access to their health information. Our mission is to simplify
               healthcare management by providing a comprehensive platform that
               puts patients and families in control of their medical records,
@@ -188,7 +188,7 @@ export default function About() {
               Key Features
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Discover what makes MediVault the perfect solution for your
+              Discover what makes MediTrack the perfect solution for your
               healthcare management needs.
             </p>
           </div>
@@ -223,7 +223,7 @@ export default function About() {
                 Built with Modern Technology
               </h2>
               <p className="text-xl text-white/80">
-                MediVault is crafted using cutting-edge technologies for optimal
+                MediTrack is crafted using cutting-edge technologies for optimal
                 performance, security, and user experience.
               </p>
             </div>
@@ -266,7 +266,7 @@ export default function About() {
           <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl shadow-xl p-12 text-center text-white">
             <h2 className="text-3xl font-bold mb-6">Ready to Get Started?</h2>
             <p className="text-xl mb-8 text-white/90">
-              Join thousands of users who trust MediVault with their healthcare
+              Join thousands of users who trust MediTrack with their healthcare
               management.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -335,7 +335,7 @@ export default function About() {
                 Terms of Service
               </h3>
               <p className="text-gray-600 mb-4">
-                Review the terms and conditions for using MediVault platform.
+                Review the terms and conditions for using MediTrack platform.
               </p>
               <button className="text-purple-600 font-semibold hover:text-purple-700 transition-colors">
                 View Terms

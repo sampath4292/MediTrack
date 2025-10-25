@@ -32,7 +32,7 @@ app.use((req, res) => {
 
 const PORT = process.env.PORT || 4000;
 const MONGO_URI =
-  process.env.MONGO_URI || "mongodb://localhost:27017/medivault";
+  process.env.MONGO_URI || "mongodb://localhost:27017/meditrack";
 
 mongoose
   .connect(MONGO_URI)

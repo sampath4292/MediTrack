@@ -1,6 +1,6 @@
 ﻿<div align="center">
 
-# MediVault 💊
+# MediTrack 💊
 
 <strong>A Digital Vault to Store & Track Medicine Slips</strong>
 
@@ -10,7 +10,7 @@ Live link - https://meditrack-1-qjyk.onrender.com/
 
 ## 📌 Overview
 
-MediVault is a **MERN stack web application** that lets users securely **store, manage, search, and track medical prescriptions ("medicine slips")**. Instead of carrying paper slips, patients can upload and access their prescription history anywhere.
+MediTrack is a **MERN stack web application** that lets users securely **store, manage, search, and track medical prescriptions ("medicine slips")**. Instead of carrying paper slips, patients can upload and access their prescription history anywhere.
 
 > Status: Initial MVP scaffold committed (auth, slip upload, search, minimal UI). Cloud storage + production hardening still pending (see Roadmap).
 
@@ -72,8 +72,8 @@ MediTrack/
 Clone & install:
 
 ```powershell
-git clone <repo-url> MediVault
-cd MediVault
+git clone <repo-url> MediTrack
+cd MediTrack
 
 # Backend deps
 cd server
@@ -100,7 +100,7 @@ Backend (`server/.env`):
 
 ```
 PORT=4000
-MONGO_URI=mongodb://localhost:27017/medivault
+MONGO_URI=mongodb://localhost:27017/meditrack
 JWT_SECRET=change_me
 CLIENT_ORIGIN=http://localhost:5173
 CLOUDINARY_URL=cloudinary://API_KEY:API_SECRET@CLOUD_NAME   # optional for prod
@@ -188,8 +188,8 @@ _Add screenshots or UI mockups once available_
 ### 1️⃣ Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/medivault.git
-cd medivault
+git clone https://github.com/your-username/meditrack.git
+cd meditrack
 2️⃣ Backend Setup
 cd backend
 npm install

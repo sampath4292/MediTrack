@@ -8,9 +8,9 @@ export default function Header() {
         <div className="flex items-center justify-between h-16">
           <Link to="/" className="flex items-center space-x-3">
             <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center text-white font-bold">
-              MV
+              MT
             </div>
-            <span className="text-xl font-semibold text-gray-900">MediVault</span>
+            <span className="text-xl font-semibold text-gray-900">MediTrack</span>
           </Link>
 
           <nav className="flex items-center space-x-4">

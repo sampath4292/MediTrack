@@ -13,7 +13,7 @@ import ErrorBoundary from "./components/ErrorBoundary.jsx";
 
 function PrivateRoute({ children }) {
   const { token, loading } = useAuth();
-  
+
   if (loading) return <LoadingPage />;
   if (!token) return <Navigate to="/auth" replace />;
   return children;
@@ -21,7 +21,7 @@ function PrivateRoute({ children }) {
 
 function PublicRoute({ children }) {
   const { token, loading } = useAuth();
-  
+
   if (loading) return <LoadingPage />;
   if (token) return <Navigate to="/dashboard" replace />;
   return children;
@@ -30,11 +30,14 @@ function PublicRoute({ children }) {
 function App() {
   return (
     <Routes>
-      <Route path="/auth" element={
-        <PublicRoute>
-          <AuthPage />
-        </PublicRoute>
-      } />
+      <Route
+        path="/auth"
+        element={
+          <PublicRoute>
+            <AuthPage />
+          </PublicRoute>
+        }
+      />
       <Route path="/about" element={<About />} />
       <Route path="/" element={<Home />} />
       <Route

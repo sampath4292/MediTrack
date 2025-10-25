@@ -245,7 +245,7 @@ export default function Dashboard() {
                   />
                 </svg>
               </div>
-              <span className="text-xl font-bold text-gray-800">MediVault</span>
+              <span className="text-xl font-bold text-gray-800">MediTrack</span>
             </div>
           </div>
 
@@ -453,7 +453,7 @@ export default function Dashboard() {
                   </svg>
                 </div>
                 <span className="text-xl font-bold text-gray-800">
-                  MediVault
+                  MediTrack
                 </span>
               </div>
               <button
@@ -937,7 +937,7 @@ export default function Dashboard() {
         <div className="mb-8 flex justify-center">
           <div className="bg-gradient-to-r from-blue-100 via-purple-100 to-indigo-100 rounded-xl shadow-lg p-8 w-full max-w-2xl text-center border border-blue-200">
             <h2 className="text-2xl font-bold text-blue-700 mb-2">
-              Welcome to MediVault!
+              Welcome to MediTrack!
             </h2>
             <p className="text-lg text-gray-700 mb-4">
               Your health records and family care, all in one place. Stay
@@ -1125,7 +1125,6 @@ export default function Dashboard() {
               </div>
             </div>
           </section>
-          
           {/* Your Medical Records Section - Moved below Doctor Visits */}
           <section className="mb-12">
             <div className="mb-6">
@@ -1785,7 +1784,7 @@ export default function Dashboard() {
                       />
                     </svg>
                   </div>
-                  <span className="text-xl font-bold">MediVault</span>
+                  <span className="text-xl font-bold">MediTrack</span>
                 </div>
                 <p className="text-gray-400 text-sm">
                   Your trusted platform for secure medical record management.
@@ -1866,7 +1865,7 @@ export default function Dashboard() {
               <div>
                 <h3 className="font-bold text-lg mb-4">Contact</h3>
                 <p className="text-sm text-gray-400">
-                  Email: support@medivault.com
+                  Email: support@meditrack.com
                   <br />
                   Phone: +1 (555) 123-4567
                   <br />
@@ -1876,7 +1875,7 @@ export default function Dashboard() {
             </div>
 
             <div className="border-t border-gray-800 pt-8 text-center text-sm text-gray-400">
-              <p>© 2025 MediVault. All rights reserved.</p>
+              <p>© 2025 MediTrack. All rights reserved.</p>
             </div>
           </div>
         </footer>

@@ -1,8 +1,9 @@
-# MediVault - QA Testing Checklist
+# MediTrack - QA Testing Checklist
 
 ## 🧪 Authentication Testing
 
 ### Login Flow
+
 - [ ] Enter valid credentials → Should redirect to dashboard
 - [ ] Enter invalid credentials → Should show error message
 - [ ] Leave fields empty and submit → Should show validation error
@@ -10,12 +11,14 @@
 - [ ] Click "Sign in" link from register → Should switch to login mode
 
 ### Registration Flow
+
 - [ ] Enter all fields correctly → Should create account and redirect to dashboard
 - [ ] Enter existing email → Should show "Email already exists" error
 - [ ] Enter short password (<6 chars) → Should show validation error
 - [ ] Leave name field empty → Should show validation error
 
 ### Session Persistence
+
 - [ ] Login and refresh page → Should stay logged in
 - [ ] Login and close browser → Should stay logged in when reopened
 - [ ] Logout → Should clear session and redirect to home
@@ -23,6 +26,7 @@
 - [ ] Visit /auth when logged in → Should redirect to /dashboard
 
 ### Back Button Behavior
+
 - [ ] Login → Dashboard → Press Back → Should stay on dashboard
 - [ ] Dashboard → Home → Back → Should return to dashboard
 - [ ] Logout → Press Back → Should not log back in
@@ -32,6 +36,7 @@
 ## 🎨 UI/UX Testing
 
 ### Visual Consistency
+
 - [ ] All buttons have same height and padding
 - [ ] All input fields have consistent styling
 - [ ] All cards have same border radius and shadow
@@ -40,12 +45,14 @@
 - [ ] Spacing between sections is uniform
 
 ### Hover Effects
+
 - [ ] Buttons scale up slightly on hover
 - [ ] Links change color on hover
 - [ ] Cards lift with shadow increase on hover
 - [ ] Navigation items highlight on hover
 
 ### Loading States
+
 - [ ] Login button shows spinner during submission
 - [ ] Register button shows spinner during submission
 - [ ] Page shows loading screen on route change
@@ -53,6 +60,7 @@
 - [ ] Loading spinner is visible and animated
 
 ### Feedback & Notifications
+
 - [ ] Success toast appears after successful action
 - [ ] Error toast appears after failed action
 - [ ] Toast auto-dismisses after 3 seconds
@@ -64,6 +72,7 @@
 ## 📱 Responsiveness Testing
 
 ### Mobile (320px - 767px)
+
 - [ ] All content fits within viewport width
 - [ ] No horizontal scrolling
 - [ ] Touch targets are at least 44×44px
@@ -73,18 +82,21 @@
 - [ ] Text is readable without zooming
 
 ### Tablet (768px - 1023px)
+
 - [ ] Layout adapts to 2-column grid
 - [ ] Navigation is accessible
 - [ ] Images scale appropriately
 - [ ] Cards use available space well
 
 ### Desktop (1024px+)
+
 - [ ] Sidebar navigation is visible
 - [ ] Content uses full width appropriately
 - [ ] 3-4 column grids display correctly
 - [ ] No wasted white space
 
 ### Cross-Browser Testing
+
 - [ ] Chrome (latest)
 - [ ] Firefox (latest)
 - [ ] Safari (latest)
@@ -97,6 +109,7 @@
 ## ♿ Accessibility Testing
 
 ### Keyboard Navigation
+
 - [ ] Tab key moves through all interactive elements
 - [ ] Shift+Tab moves backwards
 - [ ] Enter key activates buttons/links
@@ -105,6 +118,7 @@
 - [ ] Skip to main content link works
 
 ### Screen Reader Testing
+
 - [ ] Page titles are announced
 - [ ] Form labels are read correctly
 - [ ] Button purposes are clear
@@ -113,6 +127,7 @@
 - [ ] Navigation landmarks are identified
 
 ### Visual Accessibility
+
 - [ ] Text contrast ratio >4.5:1 (WCAG AA)
 - [ ] Large text contrast >3:1
 - [ ] Focus indicators have sufficient contrast
@@ -121,6 +136,7 @@
 - [ ] Page is usable when zoomed
 
 ### Semantic HTML
+
 - [ ] Proper heading hierarchy (h1, h2, h3)
 - [ ] Lists use <ul>/<ol>
 - [ ] Forms use <form> and <label>
@@ -134,18 +150,21 @@
 ## 🐛 Error Handling Testing
 
 ### Form Validation Errors
+
 - [ ] Email format validation works
 - [ ] Password length validation works
 - [ ] Required field validation works
 - [ ] Error messages are clear and helpful
 
 ### Network Errors
+
 - [ ] Offline → Shows network error message
 - [ ] Slow connection → Shows loading state
 - [ ] API error → Shows user-friendly message
 - [ ] Timeout → Shows retry option
 
 ### React Errors
+
 - [ ] Error boundary catches errors
 - [ ] Error screen shows friendly message
 - [ ] Refresh button works
@@ -157,24 +176,28 @@
 ## 🚀 Performance Testing
 
 ### Load Times
+
 - [ ] Initial page load <3 seconds
 - [ ] Navigation between pages is instant
 - [ ] Images load without blocking
 - [ ] Fonts load without FOIT/FOUT
 
 ### Animations
+
 - [ ] Smooth at 60fps
 - [ ] No janky scrolling
 - [ ] Transitions are smooth
 - [ ] Reduced motion setting is respected
 
 ### Lighthouse Scores
+
 - [ ] Performance >90
 - [ ] Accessibility >95
 - [ ] Best Practices >90
 - [ ] SEO >90
 
 ### Network Performance
+
 - [ ] Page size <500KB
 - [ ] <30 HTTP requests
 - [ ] Gzip/Brotli compression enabled
@@ -185,6 +208,7 @@
 ## 🔒 Security Testing
 
 ### Authentication
+
 - [ ] Passwords are not visible in logs
 - [ ] Tokens are stored securely
 - [ ] Session expires on logout
@@ -192,6 +216,7 @@
 - [ ] API endpoints validate tokens
 
 ### Input Validation
+
 - [ ] SQL injection attempts are blocked
 - [ ] XSS attempts are sanitized
 - [ ] CSRF protection is enabled
@@ -202,18 +227,21 @@
 ## 📊 Browser DevTools Testing
 
 ### Console
+
 - [ ] No JavaScript errors
 - [ ] No console warnings (except expected ones)
 - [ ] No CORS errors
 - [ ] Proper API request/response logging
 
 ### Network Tab
+
 - [ ] All requests return 200 or expected status
 - [ ] No 404 errors for assets
 - [ ] API responses are JSON
 - [ ] Proper caching headers
 
 ### Performance Tab
+
 - [ ] No long tasks (>50ms)
 - [ ] Smooth rendering
 - [ ] No layout shifts
@@ -224,6 +252,7 @@
 ## 🎯 User Flow Testing
 
 ### Complete User Journey
+
 1. [ ] Visit homepage as new user
 2. [ ] Navigate to About page
 3. [ ] Click Sign In
@@ -242,6 +271,7 @@
 ## ✅ Sign-off Checklist
 
 ### Pre-Production
+
 - [ ] All tests pass
 - [ ] No critical bugs
 - [ ] Performance meets targets
@@ -251,6 +281,7 @@
 - [ ] Security review complete
 
 ### Documentation
+
 - [ ] README is up to date
 - [ ] API documentation exists
 - [ ] Component documentation exists
@@ -258,6 +289,7 @@
 - [ ] Known issues documented
 
 ### Deployment
+
 - [ ] Environment variables configured
 - [ ] Database migrations ready
 - [ ] SSL certificate installed
@@ -307,6 +339,7 @@
 ## 📞 Testing Support
 
 If you find issues:
+
 1. Document with bug report template
 2. Check if issue is reproducible
 3. Check browser console for errors
@@ -316,7 +349,7 @@ If you find issues:
 
 ---
 
-**Testing completed by:** _______________  
-**Date:** _______________  
-**Build version:** _______________  
-**Sign-off:** _______________
+**Testing completed by:** ******\_\_\_******  
+**Date:** ******\_\_\_******  
+**Build version:** ******\_\_\_******  
+**Sign-off:** ******\_\_\_******

@@ -21,7 +21,7 @@ export function AuthProvider({ children }) {
         setLoading(false);
       }
     };
-    
+
     verifyToken();
   }, []);
 

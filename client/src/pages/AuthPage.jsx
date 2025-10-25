@@ -73,10 +73,10 @@ export default function AuthPage() {
               </svg>
             </div>
             <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              MediVault
+              MediTrack
             </h1>
             <p className="text-gray-600 text-sm">
-              {mode === "login" ? "Welcome Back" : "Join MediVault Today"}
+              {mode === "login" ? "Welcome Back" : "Join MediTrack Today"}
             </p>
             <p className="text-gray-500 text-xs">
               Sign in to access your digital medicine vault
@@ -224,7 +224,7 @@ export default function AuthPage() {
               <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
                 <p className="text-xs text-blue-700">
                   <span className="font-semibold">Demo:</span> Create an account
-                  or use demo@medivault.com / demo123
+                  or use demo@meditrack.com / demo123
                 </p>
               </div>
             )}
