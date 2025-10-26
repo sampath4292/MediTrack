@@ -100,7 +100,7 @@ Backend (`server/.env`):
 
 ```
 PORT=4000
-MONGO_URI=mongodb://localhost:27017/meditrack
+MONGO_URI=mongodb://localhost:27017/medivault
 JWT_SECRET=change_me
 CLIENT_ORIGIN=http://localhost:5173
 CLOUDINARY_URL=cloudinary://API_KEY:API_SECRET@CLOUD_NAME   # optional for prod

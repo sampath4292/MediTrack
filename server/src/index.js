@@ -32,13 +32,16 @@ app.use((req, res) => {
 
 const PORT = process.env.PORT || 4000;
 const MONGO_URI =
-  process.env.MONGO_URI || "mongodb://localhost:27017/meditrack";
+  process.env.MONGO_URI || "mongodb://localhost:27017/medivault";
 
 mongoose
   .connect(MONGO_URI)
   .then(() => {
     console.log("MongoDB connected");
-    app.listen(PORT, () => console.log(`Server running on :${PORT}`));
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`Server running on :${PORT}`);
+      console.log(`Access from network: http://10.250.29.242:${PORT}`);
+    });
   })
   .catch((err) => {
     console.error("Mongo connection error", err);
